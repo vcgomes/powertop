@@ -50,7 +50,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "iw.h"
 
 
-#ifndef HAVE_LIBNL20
+#ifdef NEED_LIBNL_COMPAT
 /* libnl 2.0 compatibility code */
 
 static inline struct nl_handle *nl_socket_alloc(void)

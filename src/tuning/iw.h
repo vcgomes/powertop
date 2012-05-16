@@ -46,7 +46,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "config.h"
 #endif
 
-#ifndef HAVE_LIBNL20
+#ifdef NEED_LIBNL_COMPAT
 #define nl_sock nl_handle
 #endif
 

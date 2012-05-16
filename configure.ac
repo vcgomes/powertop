@@ -54,19 +54,24 @@ PKG_CHECK_MODULES([LIBZ], [zlib],[],[
 	AC_SEARCH_LIBS([deflate], [z], [], AC_MSG_ERROR([zlib is required but was not found]), [])
 ]) 
 
-has_libnl_ver=0
-PKG_CHECK_MODULES([LIBNL], [libnl-1], [has_libnl_ver=1], [
-	AC_SEARCH_LIBS([nl_socket_alloc], [nl], [has_libnl_ver=2], [
-		     PKG_CHECK_MODULES([LIBNL], [libnl-3.0 libnl-genl-3.0], [has_libnl_ver=3],
-				       [AC_SEARCH_LIBS([nl_socket_alloc], [nl-3 nl-genl-3], [has_libnl_ver=3], [], [])])
-	], [])
+PKG_CHECK_MODULES(LIBNL3, libnl-3.0 libnl-genl-3.0, [
+	NETLINK_CFLAGS=${LIBNL3_CFLAGS}
+	NETLINK_LIBS=${LIBNL3_LIBS}
+], [
+	PKG_CHECK_MODULES(LIBNL2, libnl-2.0, [
+		NETLINK_CFLAGS=${LIBNL2_CFLAGS}
+		NETLINK_LIBS=${LIBNL2_LIBS}
+	], [
+		PKG_CHECK_MODULES(LIBNL1, libnl-1, dummy=yes,
+			AC_MSG_ERROR(Netlink library is required))
+		AC_DEFINE(NEED_LIBNL_COMPAT, 1,
+			[Define to 1 if you need libnl-1 compat functions.])
+		NETLINK_CFLAGS=${LIBNL1_CFLAGS}
+		NETLINK_LIBS=${LIBNL1_LIBS}
+	])
 ])
-if (test "$has_libnl_ver" -eq 0); then
-	AC_MSG_ERROR(libnl is required but not found)
-fi
-if (test "$has_libnl_ver" -gt 1); then
-	AC_DEFINE([HAVE_LIBNL20], [1], [Define if you have libnl-2.0 or higher])
-fi
+AC_SUBST(NETLINK_CFLAGS)
+AC_SUBST(NETLINK_LIBS)
 
 AC_SEARCH_LIBS([pthread_create], [pthread], [], AC_MSG_ERROR([libpthread is required but was not found]), [])
 AC_SEARCH_LIBS([inet_aton], [resolv], [], AC_MSG_ERROR([libresolv is required but was not found]), [])
